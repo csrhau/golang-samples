@@ -5,21 +5,20 @@ import (
 	"sync"
 )
 
-func waitChannel() (sync.WaitGroup, <-chan struct{}) {
+func waitChannel(runners int) (*sync.WaitGroup, <-chan struct{}) {
 	var wg sync.WaitGroup
+	wg.Add(runners)
 	ch := make(chan struct{})
 	go func() {
 		wg.Wait()
 		defer close(ch)
 	}()
-	return wg, ch
+	return &wg, ch
 }
 
 func main() {
 	n, s, e, w := make(chan bool), make(chan bool), make(chan bool), make(chan bool)
-	wg, done := waitChannel()
-	wg.Add(4)
-	fmt.Println("Here")
+	wg, done := waitChannel(4)
 	go func() { n <- true }()
 	go func() { s <- true }()
 	go func() { e <- true }()
