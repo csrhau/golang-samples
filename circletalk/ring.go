@@ -2,12 +2,17 @@ package main
 
 import "sync"
 
-type Element struct {
+type Element interface {
+	Step()
+	Val() int
+}
+
+type RingElement struct {
 	val     int
 	in, out chan int
 }
 
-func (e *Element) Step() {
+func (e *RingElement) Step() {
 	sent := make(chan struct{})
 	go func() {
 		defer close(sent)
@@ -18,11 +23,15 @@ func (e *Element) Step() {
 	e.val = recv
 }
 
-type Ring struct {
-	elements []*Element
+func (e RingElement) Val() int {
+	return e.val
 }
 
-func (r Ring) Elements() []*Element {
+type Ring struct {
+	elements []Element
+}
+
+func (r Ring) Elements() []Element {
 	return r.elements
 }
 
@@ -30,7 +39,7 @@ func (r *Ring) Step() {
 	var wg sync.WaitGroup
 	wg.Add(len(r.Elements()))
 	for _, el := range r.Elements() {
-		go func(el *Element) {
+		go func(el Element) {
 			defer wg.Done()
 			el.Step()
 		}(el)
@@ -39,15 +48,21 @@ func (r *Ring) Step() {
 }
 
 func MakeRing(els int) Ring {
-	elems := make([]*Element, els)
+	elems := make([]Element, els)
+
+	firstOut := make(chan int)
+	lastOut := firstOut
 	for i := 0; i < els; i++ {
-		elems[i] = new(Element)
-		elems[i].val = i
-		elems[i].out = make(chan int)
-		if i > 0 {
-			elems[i].in = elems[i-1].out
+		re := new(RingElement)
+		re.val = i
+		re.in = lastOut
+		if i < els-1 {
+			re.out = make(chan int)
+		} else {
+			re.out = firstOut
 		}
+		lastOut = re.out
+		elems[i] = re
 	}
-	elems[0].in = elems[els-1].out
 	return Ring{elements: elems}
 }

@@ -8,8 +8,8 @@ func TestElementRingUnconnected(t *testing.T) {
 	expected := make([]int, els)
 	for i := 0; i < els; i++ {
 		expected[i] = i
-		if r.Elements()[i].val != i {
-			t.Error("Invalid initial value in element", i, " - ", r.Elements()[i].val)
+		if r.Elements()[i].Val() != i {
+			t.Error("Invalid initial value in element", i, " - ", r.Elements()[i].Val())
 		}
 	}
 
@@ -17,8 +17,8 @@ func TestElementRingUnconnected(t *testing.T) {
 		r.Step()
 		expected = append(expected[els-1:], expected[:els-1]...)
 		for i, e := range expected {
-			if r.Elements()[i].val != e {
-				t.Error("Value error for element", i, "expected", e, "got", r.Elements()[i].val)
+			if r.Elements()[i].Val() != e {
+				t.Error("Value error for element", i, "expected", e, "got", r.Elements()[i].Val())
 			}
 		}
 
@@ -26,8 +26,8 @@ func TestElementRingUnconnected(t *testing.T) {
 	// after els iterations the values should be back in the correct order
 
 	for i := 0; i < els; i++ {
-		if r.Elements()[i].val != i {
-			t.Error("Invalid initial value in element", i, " - ", r.Elements()[i].val)
+		if r.Elements()[i].Val() != i {
+			t.Error("Invalid initial value in element", i, " - ", r.Elements()[i].Val())
 		}
 	}
 
